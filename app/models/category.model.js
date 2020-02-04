@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const CategorySchema = mongoose.Schema({
   title: String,
   description: String,
-  image: { data: Buffer, contentType: String }
+  image: String
 }, {
   timestamps: true
 });

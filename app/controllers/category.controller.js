@@ -3,16 +3,17 @@ const Category = require('../models/category.model');
 // Create and Save a new Category
 exports.create = (req, res) => {
   // Validate request
-  if(!req.body.title) {
+  if (!req.body.title) {
     return res.status(400).send({
-        message: "Category title can not be empty"
+      message: "Category title can not be empty"
     });
   }
 
   // Create a Category
   const category = new Category({
-    title: req.body.title || "Untitled Category", 
+    title: req.body.title || "Untitled Category",
     description: req.body.description,
+    image: req.body.image
   });
 
   // Save Category in the database
@@ -20,7 +21,7 @@ exports.create = (req, res) => {
     res.send(data);
   }).catch(err => {
     res.status(500).send({
-        message: err.message || "Some error occurred while creating the Category."
+      message: err.message || "Some error occurred while creating the Category."
     });
   });
 };
@@ -28,10 +29,10 @@ exports.create = (req, res) => {
 // Retrieve and return all categories from the database.
 exports.findAll = (req, res) => {
   Category.find().then(categories => {
-      res.send(categories);
+    res.send(categories);
   }).catch(err => {
     res.status(500).send({
-        message: err.message || "Some error occurred while retrieving categories."
+      message: err.message || "Some error occurred while retrieving categories."
     });
   });
 };
@@ -48,5 +49,21 @@ exports.update = (req, res) => {
 
 // Delete a category with the specified categoryId in the request
 exports.delete = (req, res) => {
-
+  Category.findByIdAndRemove(req.params.categoryId).then(category => {
+    if (!category) {
+      return res.status(404).send({
+        message: "Category not found with id " + req.params.category
+      });
+    }
+    res.send({ message: "Category deleted successfully!" });
+  }).catch(err => {
+    if (err.kind === 'ObjectId' || err.name === 'NotFound') {
+      return res.status(404).send({
+        message: "Category not found with id " + req.params.categoryId
+      });
+    }
+    return res.status(500).send({
+      message: "Could not delete category with id " + req.params.categoryId
+    });
+  });
 };
