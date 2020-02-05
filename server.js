@@ -19,6 +19,8 @@ app.use(function(req, res, next) {
 // parse requests of content-type - application/json
 app.use(bodyParser.json())
 
+app.use(express.static('./public'));
+
 // define a simple route
 app.get('/', (req, res) => {
   res.json({"message": "Welcome to EasyNotes application. Take notes quickly. Organize and keep track of all your notes."});

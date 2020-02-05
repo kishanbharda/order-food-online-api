@@ -4,8 +4,10 @@ const Category = require('../models/category.model');
 exports.create = (req, res) => {
   // Validate request
   if (!req.body.title) {
-    return res.status(400).send({
-      message: "Category title can not be empty"
+    return res.send({
+      success: false,
+      message: "Category title can not be empty",
+      data: []
     });
   }
 
@@ -18,7 +20,11 @@ exports.create = (req, res) => {
 
   // Save Category in the database
   category.save().then(data => {
-    res.send(data);
+    res.send({
+      success: true,
+      message: "Category added successfully !!!",
+      data
+    });
   }).catch(err => {
     res.status(500).send({
       message: err.message || "Some error occurred while creating the Category."
