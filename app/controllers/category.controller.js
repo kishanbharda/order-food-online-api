@@ -1,4 +1,5 @@
 const Category = require('../models/category.model');
+const config = require('../../config/server.config');
 
 // Create and Save a new Category
 exports.create = (req, res) => {
@@ -15,7 +16,7 @@ exports.create = (req, res) => {
   const category = new Category({
     title: req.body.title || "Untitled Category",
     description: req.body.description,
-    image: req.body.image
+    image: req.file ? `${config.serverUrl}/images/categories/${req.file.filename}` : ''
   });
 
   // Save Category in the database
@@ -35,7 +36,19 @@ exports.create = (req, res) => {
 // Retrieve and return all categories from the database.
 exports.findAll = (req, res) => {
   Category.find().then(categories => {
-    res.send(categories);
+    if (categories.length > 0) {
+      res.send({
+        success: true,
+        message: "Category fetched successfully !!!",
+        data: categories
+      });
+    } else {
+      res.send({
+        success: false,
+        message: "Category list is empty !!!",
+        data: categories
+      });
+    }
   }).catch(err => {
     res.status(500).send({
       message: err.message || "Some error occurred while retrieving categories."
@@ -50,26 +63,73 @@ exports.findOne = (req, res) => {
 
 // Update a category identified by the categoryId in the request
 exports.update = (req, res) => {
+  // Validate Request
+  if (!req.body.title) {
+    return res.send({
+      success: false,
+      message: "Title cannot be empty",
+      data: []
+    })
+  }
 
+  // Find note and update it with the request body
+  Category.findByIdAndUpdate(req.params.categoryId, {
+    title: req.body.title || "Untitled Category",
+    description: req.body.description,
+    image: req.file ? `${config.serverUrl}/images/categories/${req.file.filename}` : req.body.image
+  }, { new: true }).then(category => {
+    if (!category) {
+      return res.send({
+        success: false,
+        message: "Category not found with id " + req.params.categoryId
+      });
+    }
+    res.send({
+      success: true,
+      message: "Category updated successfully !!!",
+      data: []
+    });
+  }).catch(err => {
+    if (err.kind === 'ObjectId') {
+      return res.send({
+        success: false,
+        message: "Category not found with id " + req.params.categoryId,
+        data: []
+      });
+    }
+    return res.status(500).send({
+      message: "Error updating category with id " + req.params.categoryId
+    });
+  });
 };
 
 // Delete a category with the specified categoryId in the request
 exports.delete = (req, res) => {
   Category.findByIdAndRemove(req.params.categoryId).then(category => {
     if (!category) {
-      return res.status(404).send({
-        message: "Category not found with id " + req.params.category
+      return res.send({
+        success: false,
+        message: "Category not found with id " + req.params.categoryId,
+        data: category
       });
     }
-    res.send({ message: "Category deleted successfully!" });
+    return res.send({
+      success: true,
+      message: "Category deleted successfully!",
+      data: category
+    });
   }).catch(err => {
     if (err.kind === 'ObjectId' || err.name === 'NotFound') {
-      return res.status(404).send({
-        message: "Category not found with id " + req.params.categoryId
+      return res.send({
+        success: false,
+        message: "Category not found with id " + req.params.categoryId,
+        data: null
       });
     }
-    return res.status(500).send({
-      message: "Could not delete category with id " + req.params.categoryId
+    return res.send({
+      success: false,
+      message: "Could not delete category with id " + req.params.categoryId,
+      data: null
     });
   });
 };

@@ -13,20 +13,12 @@ module.exports = (app) => {
     }
   });
 
-  const upload = multer({ storage: storage });
-
-  app.post('/upload', upload.single('image'), (req, res, next) => {
-    res.status(201).json({
-      success: true,
-      message: "File uploaded successfully",
-      data: `${config.serverUrl}/images/categories/${req.file.filename}`
-    });
-  });
+  const categoryImage = multer({ storage });
 
   const categories = require('../controllers/category.controller.js');
 
   // Create a new Note
-  app.post('/categories', categories.create);
+  app.post('/categories', categoryImage.single('image'), categories.create);
 
   // Retrieve all Notes
   app.get('/categories', categories.findAll);
@@ -35,7 +27,7 @@ module.exports = (app) => {
   app.get('/categories/:categoryId', categories.findOne);
 
   // Update a Note with noteId
-  app.put('/categories/:categoryId', categories.update);
+  app.put('/categories/:categoryId', categoryImage.single('image'), categories.update);
 
   // Delete a Note with noteId
   app.delete('/categories/:categoryId', categories.delete);
