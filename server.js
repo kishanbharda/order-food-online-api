@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const dbConfig = require('./config/database.config.js');
 const mongoose = require('mongoose');
@@ -19,7 +20,7 @@ app.use(function(req, res, next) {
 // parse requests of content-type - application/json
 app.use(bodyParser.json())
 
-app.use(express.static('./public'));
+app.use(express.static(path.join(__dirname, 'public')))
 
 // define a simple route
 app.get('/', (req, res) => {
